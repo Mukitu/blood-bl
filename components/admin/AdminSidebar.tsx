@@ -28,6 +28,7 @@ const tabs = [
   { id: 'adsense', label: 'AdSense', icon: DollarSign },
   { id: 'adsterra', label: 'Adsterra', icon: Globe },
   { id: 'banners', label: 'ব্যনার', icon: ImageIcon },
+  { id: 'owner', label: 'মালিক পরিচিতি', icon: Users },
   { id: 'settings', label: 'সেটিংস', icon: Settings },
 ]
 

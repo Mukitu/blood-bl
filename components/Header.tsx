@@ -26,6 +26,9 @@ export default function Header() {
             <Link href="/search" className="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium">
               খুঁজুন
             </Link>
+            <Link href="/owner" className="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium">
+              মালিক পরিচিতি
+            </Link>
             {user ? (
               <>
                 <Link href="/dashboard" className="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1">
@@ -80,6 +83,13 @@ export default function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               খুঁজুন
+            </Link>
+            <Link
+              href="/owner"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              মালিক পরিচিতি
             </Link>
             {user ? (
               <>

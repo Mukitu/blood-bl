@@ -44,6 +44,33 @@ CREATE POLICY "Users can insert their own profile." ON public.users
 CREATE POLICY "Users can update their own profile." ON public.users
     FOR UPDATE USING (auth.uid() = auth_id);
 
+-- Create site_settings table
+CREATE TABLE IF NOT EXISTS public.site_settings (
+    key TEXT PRIMARY KEY,
+    value JSONB NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for site_settings
+CREATE POLICY "Public read access for site_settings" ON public.site_settings
+    FOR SELECT USING (true);
+
+CREATE POLICY "Admin write access for site_settings" ON public.site_settings
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM public.users
+            WHERE auth_id = auth.uid() AND (is_admin = true OR is_super_admin = true)
+        )
+    );
+
+-- Initial data for owner_info
+INSERT INTO public.site_settings (key, value)
+VALUES ('owner_info', '{"name": "মালিকের নাম", "description": "মালিকের বর্ণনা", "photo_url": ""}')
+ON CONFLICT (key) DO NOTHING;
+
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS users_blood_group_idx ON public.users (blood_group);
 CREATE INDEX IF NOT EXISTS users_district_idx ON public.users (district);

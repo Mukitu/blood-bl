@@ -12,6 +12,7 @@ import BlockedTab from '@/components/admin/BlockedTab'
 import AdsenseTab from '@/components/admin/AdsenseTab'
 import AdsterraTab from '@/components/admin/AdsterraTab'
 import BannersTab from '@/components/admin/BannersTab'
+import OwnerTab from '@/components/admin/OwnerTab'
 import SettingsTab from '@/components/admin/SettingsTab'
 import { Droplet, LogOut } from 'lucide-react'
 
@@ -48,6 +49,7 @@ export default function AdminPage() {
       case 'adsense': return <AdsenseTab />
       case 'adsterra': return <AdsterraTab />
       case 'banners': return <BannersTab />
+      case 'owner': return <OwnerTab />
       case 'settings': return <SettingsTab />
       default: return <DashboardTab />
     }
@@ -73,6 +75,7 @@ export default function AdminPage() {
               {activeTab === 'adsense' && '💰 AdSense সেটিংস'}
               {activeTab === 'adsterra' && '🌐 Adsterra সেটিংস'}
               {activeTab === 'banners' && '🖼️ বিজ্ঞাপন ব্যানার'}
+              {activeTab === 'owner' && '👤 মালিক পরিচিতি'}
               {activeTab === 'settings' && '⚙️ সাইট সেটিংস'}
             </h2>
           </div>
