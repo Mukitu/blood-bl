@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Droplet, Stethoscope, Truck, Search as SearchIcon, Phone, MapPin, Navigation, Star } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { BLOOD_GROUPS, DISTRICTS, SPECIALITIES } from '@/lib/constants'
@@ -209,28 +210,21 @@ function SearchContent() {
                 <div key={user.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex flex-col">
-                      <button 
-                        onClick={() => window.location.href = `/profile/${user.id}`}
-                        className="text-left hover:text-red-600 transition-colors"
+                      <Link 
+                        href={`/profile/${user.id}`}
+                        className="text-left hover:text-red-600 transition-colors group"
                       >
                         <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
                           {user.name}
-                          {user.total_ratings > 0 && (
-                            <span className="flex items-center gap-0.5 text-yellow-600 text-sm font-bold bg-yellow-50 px-2 py-0.5 rounded-lg">
-                              <Star size={14} className="fill-yellow-600" />
-                              {user.avg_rating.toFixed(1)}
-                            </span>
-                          )}
+                          <span className="flex items-center gap-0.5 text-yellow-600 text-sm font-bold bg-yellow-50 px-2 py-0.5 rounded-lg border border-yellow-100">
+                            <Star size={14} className={user.total_ratings > 0 ? "fill-yellow-600" : "text-gray-300"} />
+                            {user.avg_rating ? user.avg_rating.toFixed(1) : '0.0'}
+                          </span>
                         </h3>
-                      </button>
-                      {user.total_ratings > 0 && (
-                        <button 
-                          onClick={() => window.location.href = `/profile/${user.id}`}
-                          className="text-[10px] text-gray-500 hover:text-red-500 text-left mt-0.5"
-                        >
-                          {user.total_ratings}টি রিভিউ - বিস্তারিত দেখুন
-                        </button>
-                      )}
+                        <span className="text-[10px] text-gray-500 group-hover:text-red-500 block mt-0.5">
+                          {user.total_ratings || 0}টি রিভিউ - প্রোফাইল দেখুন
+                        </span>
+                      </Link>
                     </div>
                     {user.blood_group && activeTab === 'blood' && (
                       <span className="bg-red-100 text-red-700 px-2.5 py-1 rounded-full text-xs font-bold">
@@ -263,12 +257,12 @@ function SearchContent() {
                     <a href={`tel:${user.phone}`} className="flex-1 min-w-[80px] bg-gray-100 hover:bg-gray-200 text-gray-800 text-center py-2 rounded-lg text-sm font-medium transition-colors">
                       কল করুন
                     </a>
-                    <button 
-                      onClick={() => window.location.href = `/profile/${user.id}`}
+                    <Link 
+                      href={`/profile/${user.id}`}
                       className="flex-1 min-w-[80px] bg-white hover:bg-gray-50 text-gray-700 text-center py-2 rounded-lg text-sm font-medium transition-colors border border-gray-200"
                     >
                       প্রোফাইল
-                    </button>
+                    </Link>
                     {activeTab === 'blood' && (
                       <button 
                         onClick={() => setSelectedDonor(user)}

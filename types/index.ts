@@ -58,11 +58,11 @@ export interface BloodRequest {
 export interface Rating {
   id: string
   rater_id: string
-  rated_id: string
+  receiver_id: string
   request_id?: string
   stars: number
   comment?: string
   created_at: string
   rater?: Partial<User>
-  rated?: Partial<User>
+  receiver?: Partial<User>
 }
