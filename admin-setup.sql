@@ -129,6 +129,19 @@ ALTER TABLE public.ratings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admins can do everything on admin_settings" ON public.admin_settings
     USING (EXISTS (SELECT 1 FROM public.users WHERE auth_id = auth.uid() AND is_super_admin = true));
 
+-- Policies for ratings
+CREATE POLICY "Ratings are viewable by everyone" ON public.ratings
+    FOR SELECT USING (true);
+
+CREATE POLICY "Users can insert their own ratings" ON public.ratings
+    FOR INSERT WITH CHECK (auth.uid() IN (SELECT auth_id FROM public.users WHERE id = rater_id));
+
+CREATE POLICY "Users can update their own ratings" ON public.ratings
+    FOR UPDATE USING (auth.uid() IN (SELECT auth_id FROM public.users WHERE id = rater_id));
+
+CREATE POLICY "Admins can delete ratings" ON public.ratings
+    FOR DELETE USING (EXISTS (SELECT 1 FROM public.users WHERE auth_id = auth.uid() AND is_super_admin = true));
+
 -- Policies for blood_requests
 CREATE POLICY "Users can view their own requests" ON public.blood_requests
     FOR SELECT USING (auth.uid() IN (SELECT auth_id FROM public.users WHERE id = requester_id OR id = donor_id) OR EXISTS (SELECT 1 FROM public.users WHERE auth_id = auth.uid() AND is_super_admin = true));

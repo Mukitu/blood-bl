@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Droplet, Stethoscope, Truck, Search as SearchIcon, Phone, MapPin, Navigation } from 'lucide-react'
+import { Droplet, Stethoscope, Truck, Search as SearchIcon, Phone, MapPin, Navigation, Star } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { BLOOD_GROUPS, DISTRICTS, SPECIALITIES } from '@/lib/constants'
 import { User } from '@/types'
@@ -215,6 +215,13 @@ function SearchContent() {
                       </span>
                     )}
                   </div>
+
+                  {user.total_ratings > 0 && (
+                    <div className="flex items-center gap-1 text-yellow-600 font-bold text-xs mb-2">
+                      <Star size={12} className="fill-yellow-600" />
+                      {user.avg_rating.toFixed(1)} ({user.total_ratings})
+                    </div>
+                  )}
                   
                   {user.doctor_speciality && activeTab === 'doctor' && (
                     <p className="text-sm text-green-600 font-medium mb-2">{user.doctor_speciality}</p>
@@ -236,10 +243,16 @@ function SearchContent() {
                     </div>
                   </div>
                   
-                  <div className="mt-4 flex gap-2">
-                    <a href={`tel:${user.phone}`} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 text-center py-2 rounded-lg text-sm font-medium transition-colors">
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <a href={`tel:${user.phone}`} className="flex-1 min-w-[80px] bg-gray-100 hover:bg-gray-200 text-gray-800 text-center py-2 rounded-lg text-sm font-medium transition-colors">
                       কল করুন
                     </a>
+                    <button 
+                      onClick={() => window.location.href = `/profile/${user.id}`}
+                      className="flex-1 min-w-[80px] bg-white hover:bg-gray-50 text-gray-700 text-center py-2 rounded-lg text-sm font-medium transition-colors border border-gray-200"
+                    >
+                      প্রোফাইল
+                    </button>
                     {activeTab === 'blood' && (
                       <button 
                         onClick={() => setSelectedDonor(user)}
