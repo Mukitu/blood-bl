@@ -29,10 +29,29 @@ CREATE TABLE IF NOT EXISTS public.ratings (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     rater_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
     receiver_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+    request_id UUID REFERENCES public.blood_requests(id) ON DELETE SET NULL,
     stars INTEGER CHECK (stars >= 1 AND stars <= 5),
     comment TEXT,
     created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Trigger to update user ratings
+CREATE OR REPLACE FUNCTION public.update_user_rating()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE public.users
+    SET 
+        avg_rating = (SELECT AVG(stars) FROM public.ratings WHERE receiver_id = NEW.receiver_id),
+        total_ratings = (SELECT COUNT(*) FROM public.ratings WHERE receiver_id = NEW.receiver_id)
+    WHERE id = NEW.receiver_id;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_rating_insert ON public.ratings;
+CREATE TRIGGER on_rating_insert
+AFTER INSERT ON public.ratings
+FOR EACH ROW EXECUTE FUNCTION public.update_user_rating();
 
 -- RPC: Get Admin Stats
 CREATE OR REPLACE FUNCTION public.get_admin_stats()

@@ -5,18 +5,25 @@ import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { supabase } from '@/lib/supabase'
 import { User, BloodRequest } from '@/types'
-import { Settings, User as UserIcon, Activity, Clock, LogOut } from 'lucide-react'
+import { Settings, User as UserIcon, Activity, Clock, LogOut, Star } from 'lucide-react'
+import RatingModal from '@/components/RatingModal'
 
 export default function Dashboard() {
   const { user, loading: authLoading, signOut } = useAuth()
   const toast = useToast()
   const [activeTab, setActiveTab] = useState<'profile' | 'requests' | 'history'>('profile')
   const [requests, setRequests] = useState<BloodRequest[]>([])
+  const [ratings, setRatings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Rating Modal State
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false)
+  const [selectedRequestForRating, setSelectedRequestForRating] = useState<any>(null)
 
   useEffect(() => {
     if (user) {
       fetchRequests()
+      fetchRatings()
     }
   }, [user])
 
@@ -27,8 +34,8 @@ export default function Dashboard() {
         .from('blood_requests')
         .select(`
           *,
-          requester:users!blood_requests_requester_id_fkey(name, phone, blood_group),
-          donor:users!blood_requests_donor_id_fkey(name, phone, blood_group)
+          requester:users!blood_requests_requester_id_fkey(id, name, phone, blood_group),
+          donor:users!blood_requests_donor_id_fkey(id, name, phone, blood_group)
         `)
         .or(`requester_id.eq.${user?.id},donor_id.eq.${user?.id}`)
         .order('created_at', { ascending: false })
@@ -39,6 +46,20 @@ export default function Dashboard() {
       toast.error('অনুরোধগুলো লোড করতে সমস্যা হয়েছে')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchRatings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('ratings')
+        .select('request_id')
+        .eq('rater_id', user?.id)
+
+      if (error) throw error
+      setRatings(data || [])
+    } catch (error: any) {
+      console.error('Error fetching ratings:', error)
     }
   }
 
@@ -199,13 +220,13 @@ export default function Dashboard() {
                         <div className="flex gap-2 w-full sm:w-auto">
                           <button 
                             onClick={() => handleRequestAction(req.id, 'accepted')}
-                            className="flex-1 sm:flex-none bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700"
+                            className="flex-1 sm:flex-none bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
                           >
                             গ্রহণ করুন
                           </button>
                           <button 
                             onClick={() => handleRequestAction(req.id, 'declined')}
-                            className="flex-1 sm:flex-none bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-300"
+                            className="flex-1 sm:flex-none bg-gray-100 text-gray-700 px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-200 transition-all"
                           >
                             বাতিল
                           </button>
@@ -258,19 +279,49 @@ export default function Dashboard() {
                 <div className="space-y-4">
                   {history.map(req => {
                     const isMyRequest = req.requester_id === user.id
+                    const hasRated = ratings.some(r => r.request_id === req.id)
+                    const receiver = isMyRequest ? req.donor : req.requester
+
                     return (
-                      <div key={req.id} className="border border-gray-100 bg-gray-50 p-4 rounded-xl flex justify-between items-center">
+                      <div key={req.id} className="border border-gray-100 bg-gray-50 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-bold text-gray-900">
                             {isMyRequest ? `অনুরোধ করেছিলেন: ${req.donor?.name}` : `অনুরোধ পেয়েছিলেন: ${req.requester?.name}`}
                           </p>
-                          <p className="text-sm text-gray-500 mt-1">{new Date(req.created_at).toLocaleDateString('bn-BD')}</p>
+                          <p className="text-sm text-gray-500 mt-1">তারিখ: {new Date(req.created_at).toLocaleDateString('bn-BD')}</p>
+                          <p className="text-sm text-gray-600 mt-1">রোগী: {req.patient_name} | হাসপাতাল: {req.hospital_name}</p>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          req.status === 'accepted' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {req.status === 'accepted' ? 'গৃহীত' : 'বাতিল'}
-                        </span>
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            req.status === 'accepted' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {req.status === 'accepted' ? 'গৃহীত' : 'বাতিল'}
+                          </span>
+                          
+                          {req.status === 'accepted' && !hasRated && (
+                            <button
+                              onClick={() => {
+                                setSelectedRequestForRating({
+                                  id: req.id,
+                                  receiverId: receiver?.id,
+                                  receiverName: receiver?.name
+                                })
+                                setIsRatingModalOpen(true)
+                              }}
+                              className="flex items-center gap-2 bg-yellow-400 text-yellow-900 px-4 py-2 rounded-xl text-xs font-bold hover:bg-yellow-500 transition-all"
+                            >
+                              <Star size={14} className="fill-yellow-900" />
+                              রেটিং দিন
+                            </button>
+                          )}
+                          
+                          {hasRated && (
+                            <span className="text-xs text-gray-400 font-medium flex items-center gap-1">
+                              <Star size={12} className="fill-gray-400" />
+                              রেটিং দেওয়া হয়েছে
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )
                   })}
@@ -280,6 +331,21 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+      
+      {/* Rating Modal */}
+      {selectedRequestForRating && (
+        <RatingModal
+          isOpen={isRatingModalOpen}
+          onClose={() => setIsRatingModalOpen(false)}
+          requestId={selectedRequestForRating.id}
+          raterId={user.id}
+          receiverId={selectedRequestForRating.receiverId}
+          receiverName={selectedRequestForRating.receiverName}
+          onSuccess={() => {
+            fetchRatings()
+          }}
+        />
+      )}
     </div>
   )
 }
