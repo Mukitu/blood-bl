@@ -244,10 +244,12 @@ function SearchContent() {
                   )}
 
                   <div className="space-y-1.5 mt-3">
-                    <div className="flex items-center text-gray-600 text-sm">
-                      <Phone size={16} className="mr-2 text-gray-400" />
-                      <a href={`tel:${user.phone}`} className="hover:text-red-600">{user.phone}</a>
-                    </div>
+                    {(activeTab !== 'blood') && (
+                      <div className="flex items-center text-gray-600 text-sm">
+                        <Phone size={16} className="mr-2 text-gray-400" />
+                        <a href={`tel:${user.phone}`} className="hover:text-red-600">{user.phone}</a>
+                      </div>
+                    )}
                     <div className="flex items-center text-gray-600 text-sm">
                       <MapPin size={16} className="mr-2 text-gray-400" />
                       {user.upazila}, {user.district}
@@ -260,9 +262,11 @@ function SearchContent() {
                   </div>
                   
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <a href={`tel:${user.phone}`} className="flex-1 min-w-[80px] bg-gray-100 hover:bg-gray-200 text-gray-800 text-center py-2 rounded-lg text-sm font-medium transition-colors">
-                      কল করুন
-                    </a>
+                    {activeTab !== 'blood' && (
+                      <a href={`tel:${user.phone}`} className="flex-1 min-w-[80px] bg-gray-100 hover:bg-gray-200 text-gray-800 text-center py-2 rounded-lg text-sm font-medium transition-colors">
+                        কল করুন
+                      </a>
+                    )}
                     <Link 
                       href={`/profile/${user.id}`}
                       className="flex-1 min-w-[80px] bg-white hover:bg-gray-50 text-gray-700 text-center py-2 rounded-lg text-sm font-medium transition-colors border border-gray-200"

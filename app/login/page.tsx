@@ -8,7 +8,7 @@ import { Heart } from 'lucide-react'
 import Link from 'next/link'
 
 export default function Login() {
-  const [phone, setPhone] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -22,11 +22,11 @@ export default function Login() {
     setLoading(true)
 
     try {
-      await signIn(phone, password)
+      await signIn(identifier, password)
       toast.success('সফলভাবে লগইন হয়েছে!')
       router.push('/dashboard')
     } catch (error: any) {
-      toast.error('লগইন ব্যর্থ হয়েছে। মোবাইল নম্বর বা পাসওয়ার্ড ভুল।')
+      toast.error(error.message || 'লগইন ব্যর্থ হয়েছে। ইমেইল/মোবাইল নম্বর বা পাসওয়ার্ড ভুল।')
     } finally {
       setLoading(false)
     }
@@ -52,18 +52,18 @@ export default function Login() {
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                মোবাইল নম্বর
+              <label htmlFor="identifier" className="block text-sm font-medium text-gray-700">
+                ইমেইল অথবা মোবাইল নম্বর
               </label>
               <input
-                id="phone"
-                name="phone"
-                type="tel"
+                id="identifier"
+                name="identifier"
+                type="text"
                 required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 className="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
-                placeholder="01XXXXXXXXX"
+                placeholder="ইমেইল অথবা মোবাইল নম্বর দিন"
               />
             </div>
             <div>

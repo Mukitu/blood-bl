@@ -131,7 +131,9 @@ export default function MapComponent({ users, centerLoc }: { users: User[], cent
         >
           <div className="p-1 min-w-[150px]">
             <h3 className="font-bold mb-1 text-gray-800">{selectedUser.name}</h3>
-            <p className="m-0 text-gray-600">{selectedUser.phone}</p>
+            {(!selectedUser.blood_group || selectedUser.is_doctor || selectedUser.is_ambulance) && (
+              <p className="m-0 text-gray-600">{selectedUser.phone}</p>
+            )}
             {selectedUser.blood_group && (
               <p className="mt-1 mb-0 text-red-600 font-bold">Blood: {selectedUser.blood_group}</p>
             )}

@@ -106,12 +106,17 @@ export default function PublicProfile() {
           </div>
           
           <div className="flex gap-3 w-full md:w-auto">
-            <a 
-              href={`tel:${user.phone}`}
-              className="flex-1 md:flex-none bg-red-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-red-200 hover:bg-red-700 transition-all text-center"
-            >
-              কল করুন
-            </a>
+            {(!user.blood_group || user.is_doctor || user.is_ambulance) && (
+              <a 
+                href={`tel:${user.phone}`}
+                className="flex-1 md:flex-none bg-red-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-red-200 hover:bg-red-700 transition-all text-center"
+              >
+                কল করুন
+              </a>
+            )}
+            {user.blood_group && !user.is_doctor && !user.is_ambulance && (
+              <p className="text-sm text-gray-500 italic">রক্তের জন্য অনুরোধ পাঠান, গৃহীত হলে নম্বর পাবেন।</p>
+            )}
           </div>
         </div>
 

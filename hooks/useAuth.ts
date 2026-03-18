@@ -35,6 +35,7 @@ export function useAuth() {
 
   async function signUp(userData: {
     name: string
+    email: string
     phone: string
     password: string
     blood_group: string
@@ -51,21 +52,20 @@ export function useAuth() {
     lat?: number
     lng?: number
   }) {
-    const email = phoneToEmail(userData.phone)
-    
     const { data: authData, error } = await supabase.auth.signUp({
-      email,
+      email: userData.email,
       password: userData.password,
       options: { emailRedirectTo: undefined }
     })
     
     if (error) throw error
-
+ 
     const { error: profileError } = await supabase
       .from('users')
       .insert({
         auth_id: authData.user!.id,
         name: userData.name,
+        email: userData.email,
         phone: userData.phone,
         blood_group: userData.blood_group,
         district: userData.district,
@@ -82,13 +82,28 @@ export function useAuth() {
         lat: userData.lat || null,
         lng: userData.lng || null,
       })
-
+ 
     if (profileError) throw profileError
     return authData
   }
+ 
+  async function signIn(identifier: string, password: string) {
+    let email = identifier
+    
+    // Check if identifier is a phone number (starts with 01 and is 11 digits)
+    if (identifier.startsWith('01') && identifier.length === 11) {
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('email')
+        .eq('phone', identifier)
+        .single()
+      
+      if (userError || !userData) {
+        throw new Error('এই মোবাইল নম্বর দিয়ে কোনো একাউন্ট পাওয়া যায়নি।')
+      }
+      email = userData.email
+    }
 
-  async function signIn(phone: string, password: string) {
-    const email = phoneToEmail(phone)
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password

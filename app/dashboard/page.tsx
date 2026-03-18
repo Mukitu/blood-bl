@@ -214,8 +214,12 @@ export default function Dashboard() {
                       <div key={req.id} className="border border-red-100 bg-red-50/30 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                           <p className="font-bold text-gray-900">{req.requester?.name} <span className="text-sm font-normal text-gray-500">রক্ত চেয়েছেন</span></p>
-                          <p className="text-sm text-gray-600 mt-1">রোগী: {req.patient_name} | হাসপাতাল: {req.hospital_name}</p>
-                          <p className="text-sm text-gray-500 mt-1">তারিখ: {new Date(req.created_at).toLocaleDateString('bn-BD')}</p>
+                          <div className="text-sm text-gray-600 mt-1 space-y-1">
+                            <p><span className="font-semibold">রোগী:</span> {req.patient_name}</p>
+                            <p><span className="font-semibold">মোবাইল:</span> <a href={`tel:${req.patient_phone}`} className="text-red-600 hover:underline">{req.patient_phone}</a></p>
+                            <p><span className="font-semibold">হাসপাতাল:</span> {req.hospital_name}</p>
+                          </div>
+                          <p className="text-sm text-gray-500 mt-2">তারিখ: {new Date(req.created_at).toLocaleDateString('bn-BD')}</p>
                         </div>
                         <div className="flex gap-2 w-full sm:w-auto">
                           <button 
@@ -249,6 +253,9 @@ export default function Dashboard() {
                       <div key={req.id} className="border border-gray-200 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                           <p className="font-medium text-gray-900">আপনি <span className="font-bold">{req.donor?.name}</span> কে অনুরোধ করেছেন</p>
+                          {req.status === 'accepted' && (
+                            <p className="text-sm text-green-600 font-bold mt-1">মোবাইল: <a href={`tel:${req.donor?.phone}`} className="hover:underline">{req.donor?.phone}</a></p>
+                          )}
                           <p className="text-sm text-gray-500 mt-1">তারিখ: {new Date(req.created_at).toLocaleDateString('bn-BD')}</p>
                         </div>
                         <div>
@@ -288,6 +295,9 @@ export default function Dashboard() {
                           <p className="font-bold text-gray-900">
                             {isMyRequest ? `অনুরোধ করেছিলেন: ${req.donor?.name}` : `অনুরোধ পেয়েছিলেন: ${req.requester?.name}`}
                           </p>
+                          {req.status === 'accepted' && isMyRequest && (
+                            <p className="text-sm text-green-600 font-bold mt-1">মোবাইল: <a href={`tel:${req.donor?.phone}`} className="hover:underline">{req.donor?.phone}</a></p>
+                          )}
                           <p className="text-sm text-gray-500 mt-1">তারিখ: {new Date(req.created_at).toLocaleDateString('bn-BD')}</p>
                           <p className="text-sm text-gray-600 mt-1">রোগী: {req.patient_name} | হাসপাতাল: {req.hospital_name}</p>
                         </div>

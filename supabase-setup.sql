@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS public.users (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     auth_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
     phone TEXT UNIQUE NOT NULL,
     district TEXT NOT NULL,
     upazila TEXT NOT NULL,

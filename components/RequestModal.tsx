@@ -21,6 +21,7 @@ export default function RequestModal({ donor, onClose }: RequestModalProps) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     patient_name: '',
+    patient_phone: '',
     hospital_name: '',
   })
 
@@ -39,6 +40,7 @@ export default function RequestModal({ donor, onClose }: RequestModalProps) {
           requester_id: user.id,
           donor_id: donor.id,
           patient_name: formData.patient_name,
+          patient_phone: formData.patient_phone,
           hospital_name: formData.hospital_name,
           blood_group: donor.blood_group,
           status: 'pending'
@@ -90,6 +92,20 @@ export default function RequestModal({ donor, onClose }: RequestModalProps) {
               placeholder="রোগীর নাম লিখুন"
               value={formData.patient_name}
               onChange={(e) => setFormData({ ...formData, patient_name: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2">
+              <Phone size={14} className="text-gray-400" /> রোগীর মোবাইল নম্বর
+            </label>
+            <input
+              required
+              type="tel"
+              className="w-full border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-[#C0001A] text-sm"
+              placeholder="রোগীর মোবাইল নম্বর লিখুন"
+              value={formData.patient_phone}
+              onChange={(e) => setFormData({ ...formData, patient_phone: e.target.value })}
             />
           </div>
 

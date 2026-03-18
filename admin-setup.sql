@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS public.blood_requests (
     requester_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
     donor_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
     patient_name TEXT NOT NULL,
+    patient_phone TEXT NOT NULL,
     hospital_name TEXT NOT NULL,
     blood_group TEXT NOT NULL,
     status TEXT DEFAULT 'pending', -- pending, accepted, declined

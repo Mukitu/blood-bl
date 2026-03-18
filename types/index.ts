@@ -47,6 +47,7 @@ export interface BloodRequest {
   donor_id: string
   blood_group: BloodGroup
   patient_name?: string
+  patient_phone?: string
   hospital_name?: string
   message?: string
   status: RequestStatus
