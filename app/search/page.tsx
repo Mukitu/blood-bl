@@ -123,9 +123,9 @@ function SearchContent() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row md:h-[calc(100vh-64px)] overflow-y-auto md:overflow-hidden">
+    <div className="flex flex-col md:flex-row md:h-[calc(100vh-64px)] md:overflow-hidden">
       {/* Sidebar */}
-      <div className="w-full md:w-96 bg-white shadow-lg z-10 flex flex-col md:h-full overflow-visible md:overflow-hidden">
+      <div className="w-full md:w-96 bg-white shadow-lg z-10 flex flex-col md:h-full overflow-y-auto md:overflow-hidden">
         {/* Tabs */}
         <div className="flex border-b border-gray-200">
           <button
@@ -294,12 +294,12 @@ function SearchContent() {
                       window.scrollTo({ top: 0, behavior: 'smooth' })
                     }}
                     disabled={currentPage === 1}
-                    className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-gray-50 transition-colors text-gray-700"
+                    className="flex items-center gap-1 px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-bold disabled:opacity-50 hover:bg-gray-50 transition-all text-gray-700 shadow-sm"
                   >
-                    &larr; আগেরটি
+                    <Navigation size={16} className="rotate-[-90deg]" /> আগেরটি
                   </button>
                   
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                       <button
                         key={page}
@@ -307,7 +307,7 @@ function SearchContent() {
                           setCurrentPage(page)
                           window.scrollTo({ top: 0, behavior: 'smooth' })
                         }}
-                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${currentPage === page ? 'bg-red-600 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                        className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-bold transition-all ${currentPage === page ? 'bg-red-600 text-white shadow-lg shadow-red-200' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                       >
                         {page}
                       </button>
@@ -320,9 +320,9 @@ function SearchContent() {
                       window.scrollTo({ top: 0, behavior: 'smooth' })
                     }}
                     disabled={currentPage === totalPages}
-                    className="flex items-center gap-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-gray-50 transition-colors text-gray-700"
+                    className="flex items-center gap-1 px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-bold disabled:opacity-50 hover:bg-gray-50 transition-all text-gray-700 shadow-sm"
                   >
-                    পরবর্তী &rarr;
+                    পরবর্তী <Navigation size={16} className="rotate-90" />
                   </button>
                 </div>
               )}
@@ -332,7 +332,10 @@ function SearchContent() {
       </div>
 
       {/* Map Area */}
-      <div className="w-full h-[400px] md:flex-1 md:h-full relative bg-gray-200 z-0">
+      <div className="w-full h-[350px] md:flex-1 md:h-full relative bg-gray-200 z-0">
+        <div className="md:hidden absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 text-xs font-bold text-gray-700 flex items-center gap-2">
+          <MapPin size={14} className="text-red-600" /> ম্যাপে অবস্থান
+        </div>
         <MapComponent users={results} centerLoc={userLocation} />
       </div>
 

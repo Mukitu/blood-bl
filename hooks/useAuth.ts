@@ -9,104 +9,86 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    let mounted = true;
+    let mounted = true
 
-    async function initAuth() {
+    async function loadProfile(session: any) {
+      if (!session?.user || !mounted) return
+
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
-        if (error) throw error;
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('auth_id', session.user.id)
+          .maybeSingle()
         
-        if (session && mounted) {
-          await loadProfile(session.user.id)
-        } else if (mounted) {
-          setLoading(false)
+        if (error) {
+          console.error('Error loading profile:', error)
+          throw error
+        }
+
+        if (data) {
+          if (mounted) setUser(data)
+        } else {
+          console.warn('No profile found for authenticated user:', session.user.id)
+          // If no profile found, we might want to sign out or redirect to a setup page
+          // For now, we'll just let the user be null which will trigger a redirect to login
+          if (mounted) setUser(null)
         }
       } catch (error) {
-        console.error('Auth initialization error:', error)
+        console.error('Error in loadProfile:', error)
+      } finally {
         if (mounted) setLoading(false)
       }
     }
 
-    initAuth()
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        loadProfile(session)
+      } else {
+        if (mounted) setLoading(false)
+      }
+    })
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id)
-        if (session && mounted) {
-          await loadProfile(session.user.id)
-        } else if (mounted) {
-          setUser(null)
-          setLoading(false)
+        if (session) {
+          await loadProfile(session)
+        } else {
+          if (mounted) {
+            setUser(null)
+            setLoading(false)
+          }
         }
       }
     )
 
     return () => {
-      mounted = false;
-      listener.subscription.unsubscribe()
+      mounted = false
+      subscription.unsubscribe()
     }
   }, [])
 
-  async function loadProfile(authId: string) {
-    console.log('Loading profile for:', authId)
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('auth_id', authId)
-        .maybeSingle()
-      
-      if (error) {
-        console.error('Error loading profile:', error)
-        setUser(null)
-      } else if (!data) {
-        console.warn('No profile found for authId:', authId)
-        setUser(null)
-      } else {
-        console.log('Profile loaded:', data.name)
-        setUser(data)
-      }
-    } catch (error) {
-      console.error('Unexpected error loading profile:', error)
-      setUser(null)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function signUp(userData: {
-    name: string
-    email: string
-    phone: string
-    password: string
-    blood_group: string
-    district: string
-    upazila: string
-    bio?: string
-    is_doctor: boolean
-    doctor_speciality?: string
-    chamber_address?: string
-    visit_fee?: string
-    is_ambulance: boolean
-    vehicle_type?: string
-    vehicle_number?: string
-    lat?: number
-    lng?: number
-  }) {
+  async function signUp(userData: any) {
+    const email = phoneToEmail(userData.phone)
+    console.log('Signing up with email:', email)
     const { data: authData, error } = await supabase.auth.signUp({
-      email: userData.email,
+      email,
       password: userData.password,
-      options: { emailRedirectTo: undefined }
     })
     
-    if (error) throw error
+    if (error) {
+      console.error('Signup error:', error)
+      throw error
+    }
+    if (!authData.user) throw new Error('Auth user creation failed')
  
     const { error: profileError } = await supabase
       .from('users')
       .insert({
-        auth_id: authData.user!.id,
+        auth_id: authData.user.id,
         name: userData.name,
-        email: userData.email,
+        email,
         phone: userData.phone,
         blood_group: userData.blood_group,
         district: userData.district,
@@ -124,32 +106,34 @@ export function useAuth() {
         lng: userData.lng || null,
       })
  
-    if (profileError) throw profileError
-    return authData
-  }
- 
-  async function signIn(identifier: string, password: string) {
-    let email = identifier
-    
-    // Check if identifier is a phone number (starts with 01 and is 11 digits)
-    if (identifier.startsWith('01') && identifier.length === 11) {
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('email')
-        .eq('phone', identifier)
-        .single()
-      
-      if (userError || !userData) {
-        throw new Error('এই মোবাইল নম্বর দিয়ে কোনো একাউন্ট পাওয়া যায়নি।')
-      }
-      email = userData.email
+    if (profileError) {
+      console.error('Profile creation error:', profileError)
+      // Cleanup auth user if profile creation fails
+      await supabase.auth.signOut()
+      throw profileError
     }
 
+    return authData
+  }
+  
+  async function signIn(identifier: string, password: string) {
+    console.log('useAuth: signIn called with identifier:', identifier)
+    // Check if identifier is a phone number
+    const isPhone = /^\d+$/.test(identifier.replace(/\D/g, '')) && identifier.length >= 10
+    const email = isPhone ? phoneToEmail(identifier) : identifier
+    console.log('useAuth: signIn - Computed email:', email)
+
+    console.log('useAuth: signIn - Calling supabase.auth.signInWithPassword...')
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     })
-    if (error) throw error
+    
+    if (error) {
+      console.error('useAuth: signIn - Supabase error:', error)
+      throw error
+    }
+    console.log('useAuth: signIn - Supabase success, data:', data)
     return data
   }
 

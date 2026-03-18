@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
@@ -13,21 +13,32 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   
-  const { signIn } = useAuth()
+  const { user, loading: authLoading, signIn } = useAuth()
   const toast = useToast()
   const router = useRouter()
 
+  useEffect(() => {
+    if (user && !authLoading) {
+      router.push('/dashboard')
+    }
+  }, [user, authLoading, router])
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('HandleLogin called with identifier:', identifier)
     setLoading(true)
 
     try {
+      console.log('Calling signIn...')
       await signIn(identifier, password)
+      console.log('SignIn successful, redirecting...')
       toast.success('সফলভাবে লগইন হয়েছে!')
-      router.push('/dashboard')
+      window.location.href = '/dashboard'
     } catch (error: any) {
-      toast.error(error.message || 'লগইন ব্যর্থ হয়েছে। ইমেইল/মোবাইল নম্বর বা পাসওয়ার্ড ভুল।')
+      console.error('Login error:', error)
+      toast.error(error.message || 'লগইন ব্যর্থ হয়েছে। ইমেইল বা পাসওয়ার্ড ভুল।')
     } finally {
+      console.log('Setting loading to false')
       setLoading(false)
     }
   }
@@ -53,7 +64,7 @@ export default function Login() {
           <div className="space-y-4">
             <div>
               <label htmlFor="identifier" className="block text-sm font-medium text-gray-700">
-                ইমেইল অথবা মোবাইল নম্বর
+                মোবাইল নম্বর
               </label>
               <input
                 id="identifier"
@@ -63,7 +74,7 @@ export default function Login() {
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 className="mt-1 appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
-                placeholder="Gmail/Number"
+                placeholder="01XXXXXXXXX"
               />
             </div>
             <div>

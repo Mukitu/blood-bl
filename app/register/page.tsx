@@ -10,7 +10,6 @@ import { BLOOD_GROUPS, DISTRICTS, SPECIALITIES } from '@/lib/constants'
 
 export default function Register() {
   const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [bloodGroup, setBloodGroup] = useState('')
@@ -32,9 +31,15 @@ export default function Register() {
 
   const [loading, setLoading] = useState(false)
   
-  const { signUp } = useAuth()
+  const { user, loading: authLoading, signUp } = useAuth()
   const toast = useToast()
   const router = useRouter()
+
+  useEffect(() => {
+    if (user && !authLoading) {
+      router.push('/dashboard')
+    }
+  }, [user, authLoading, router])
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -52,24 +57,13 @@ export default function Register() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('HandleRegister called with phone:', phone)
     setLoading(true)
 
-    if (!email || !email.includes('@')) {
-      toast.error('সঠিক ইমেইল দিন')
-      setLoading(false)
-      return
-    }
-
-    if (phone.length !== 11 || !phone.startsWith('01')) {
-      toast.error('সঠিক মোবাইল নম্বর দিন (১১ ডিজিট)')
-      setLoading(false)
-      return
-    }
-
     try {
+      console.log('Calling signUp...')
       await signUp({
         name,
-        email,
         phone,
         password,
         blood_group: bloodGroup,
@@ -86,11 +80,14 @@ export default function Register() {
         lat,
         lng
       })
+      console.log('SignUp successful, redirecting...')
       toast.success('সফলভাবে একাউন্ট তৈরি হয়েছে!')
       router.push('/dashboard')
     } catch (error: any) {
+      console.error('Register error:', error)
       toast.error(error.message || 'একাউন্ট তৈরি ব্যর্থ হয়েছে।')
     } finally {
+      console.log('Setting loading to false')
       setLoading(false)
     }
   }
@@ -122,17 +119,6 @@ export default function Register() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">ইমেইল</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
-                placeholder="example@gmail.com"
               />
             </div>
             <div>

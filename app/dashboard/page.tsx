@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { supabase } from '@/lib/supabase'
@@ -9,8 +10,9 @@ import { Settings, User as UserIcon, Activity, Clock, LogOut, Star } from 'lucid
 import RatingModal from '@/components/RatingModal'
 
 export default function Dashboard() {
-  const { user, loading: authLoading, signOut } = useAuth()
+  const { user, signOut, loading: authLoading } = useAuth()
   const toast = useToast()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<'profile' | 'requests' | 'history'>('profile')
   const [requests, setRequests] = useState<BloodRequest[]>([])
   const [ratings, setRatings] = useState<any[]>([])
@@ -21,13 +23,16 @@ export default function Dashboard() {
   const [selectedRequestForRating, setSelectedRequestForRating] = useState<any>(null)
 
   useEffect(() => {
-    if (user) {
-      fetchRequests()
-      fetchRatings()
+    console.log('Dashboard mounted, user:', user, 'authLoading:', authLoading)
+    // শুধুমাত্র যখন অথেন্টিকেশন চেক সম্পন্ন হয়েছে এবং ইউজার নেই, তখনই রিডাইরেক্ট করবে
+    if (!authLoading && !user) {
+      console.log('Dashboard: Redirecting to login')
+      router.replace('/login')
     }
-  }, [user])
+  }, [user, authLoading, router])
 
   const fetchRequests = async () => {
+    if (!user) return
     setLoading(true)
     try {
       const { data, error } = await supabase
@@ -79,7 +84,7 @@ export default function Dashboard() {
     }
   }
 
-  if (authLoading) {
+  if (!user) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-64px)]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
@@ -87,22 +92,7 @@ export default function Dashboard() {
     )
   }
 
-  if (!user) {
-    return (
-      <div className="flex flex-col justify-center items-center h-[calc(100vh-64px)] bg-gray-50">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">অনুগ্রহ করে লগইন করুন</h2>
-        <p className="text-gray-600 mb-6">ড্যাশবোর্ড দেখতে আপনার একাউন্টে লগইন থাকা প্রয়োজন।</p>
-        <button 
-          onClick={() => router.push('/login')} 
-          className="bg-red-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-100"
-        >
-          লগইন পেজে যান
-        </button>
-      </div>
-    )
-  }
-
-  const incomingRequests = requests.filter(r => r.donor_id === user.id && r.status === 'pending')
+  const incomingRequests = requests.filter(r => r.donor_id === user?.id && r.status === 'pending')
   const myRequests = requests.filter(r => r.requester_id === user.id)
   const history = requests.filter(r => r.status !== 'pending')
 
@@ -220,9 +210,9 @@ export default function Dashboard() {
                           <p className="font-bold text-gray-900">{req.requester?.name} <span className="text-sm font-normal text-gray-500">রক্ত চেয়েছেন</span></p>
                           <div className="text-sm text-gray-600 mt-1 space-y-1">
                             <p><span className="font-semibold">রোগী:</span> {req.patient_name}</p>
+                            <p><span className="font-semibold">রোগ:</span> {req.disease_name}</p>
                             <p><span className="font-semibold">মোবাইল:</span> <a href={`tel:${req.patient_phone}`} className="text-red-600 hover:underline">{req.patient_phone}</a></p>
                             <p><span className="font-semibold">হাসপাতাল:</span> {req.hospital_name}</p>
-                            <p><span className="font-semibold">রোগের নাম:</span> {req.disease_name}</p>
                           </div>
                           <p className="text-sm text-gray-500 mt-2">তারিখ: {new Date(req.created_at).toLocaleDateString('bn-BD')}</p>
                         </div>
@@ -304,7 +294,7 @@ export default function Dashboard() {
                             <p className="text-sm text-green-600 font-bold mt-1">মোবাইল: <a href={`tel:${req.donor?.phone}`} className="hover:underline">{req.donor?.phone}</a></p>
                           )}
                           <p className="text-sm text-gray-500 mt-1">তারিখ: {new Date(req.created_at).toLocaleDateString('bn-BD')}</p>
-                          <p className="text-sm text-gray-600 mt-1">রোগী: {req.patient_name} | হাসপাতাল: {req.hospital_name} | রোগ: {req.disease_name}</p>
+                          <p className="text-sm text-gray-600 mt-1">রোগী: {req.patient_name} | রোগ: {req.disease_name} | হাসপাতাল: {req.hospital_name}</p>
                         </div>
                         <div className="flex items-center gap-3 w-full sm:w-auto">
                           <span className={`px-3 py-1 rounded-full text-xs font-bold ${
